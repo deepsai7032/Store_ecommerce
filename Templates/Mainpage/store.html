@@ -1,0 +1,130 @@
+{% extends "Mainpage/base.html" %}
+{% load static %}
+{% block title %}Store — Basecamp{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/home.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <span class="waypoint">IN STORE</span>
+
+  <div class="category-tabs">
+    <a href="/store/" class="{% if not selected_category and not is_other %}active{% endif %}">All</a>
+    {% for category in categories %}
+      <a href="/store/{{ category.id }}/" class="{% if selected_category.id == category.id %}active{% endif %}">{{ category.name }}</a>
+    {% endfor %}
+    <a href="/store/other/" class="{% if is_other %}active{% endif %}">Other</a>
+  </div>
+
+  {% if selected_category or is_other %}
+    <h1 style="margin-top:12px;">{% if is_other %}Other{% else %}{{ selected_category.name }}{% endif %}</h1>
+    <a href="/store/" class="back-link">&larr; All categories</a>
+
+    <div class="product-grid">
+      {% for product in products %}
+      <div class="product-card">
+        {% if product.image %}
+          <img class="product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <div class="product-image" style="background:#3A4038"></div>
+        {% endif %}
+        <div class="product-body">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-desc">{{ product.short_description }}</p>
+          <div class="product-meta">
+           {% if product.has_offer %}
+              <span class="offer-badge">{{ product.offer_percent }}% OFF</span>
+              <s class="muted">${{ product.price }}</s>
+              <span class="price">${{ product.offer_price }}</span>
+            {% else %}
+              <span class="price">${{ product.price }}</span>
+            {% endif %}
+            <span class="stock-qty">{{ product.quantity }} in stock</span>
+          </div>
+          <form action="/cart/add/{{ product.id }}/" method="post" class="buy-form">
+            {% csrf_token %}
+            <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" class="qty-input-small">
+            <button type="submit" class="btn" {% if product.quantity < 1 %}disabled{% endif %}>
+              {% if product.quantity < 1 %}Out of stock{% else %}Add to cart{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <p class="muted">Out of stock.</p>
+      {% endfor %}
+    </div>
+
+
+{% if products.has_other_pages %}
+    <div class="pagination">
+      {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}" class="page-arrow">&larr;</a>
+      {% else %}
+        <span class="page-arrow disabled">&larr;</span>
+      {% endif %}
+      <span class="page-number">{{ products.number }}</span>
+      {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}" class="page-arrow">&rarr;</a>
+      {% else %}
+        <span class="page-arrow disabled">&rarr;</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+
+  {% else %}
+    <h1 style="margin-top:12px;">All products</h1>
+
+    {% for category in categories %}
+      {% if category.products.all %}
+      <div class="section-divider">{{ category.name|upper }}</div>
+      <div class="product-grid">
+        {% for product in category.products.all %}
+        <div class="product-card">
+          {% if product.image %}
+            <img class="product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="product-image" style="background:#3A4038"></div>
+          {% endif %}
+          <div class="product-body">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-desc">{{ product.short_description }}</p>
+            <div class="product-meta">
+              <span class="price">${{ product.price }}</span>
+              <span class="stock-qty">{{ product.quantity }} in stock</span>
+            </div>
+            <form action="/cart/add/{{ product.id }}/" method="post" class="buy-form">
+              {% csrf_token %}
+              <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" class="qty-input-small">
+              <button type="submit" class="btn" {% if product.quantity < 1 %}disabled{% endif %}>
+                {% if product.quantity < 1 %}Out of stock{% else %}Add to cart{% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {% if uncategorized %}
+      <div class="section-divider">OTHER</div>
+      <div class="product-grid">
+        {% for product in uncategorized %}
+        <div class="product-card">
+          <div class="product-body">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-desc">{{ product.short_description }}</p>
+            <div class="product-meta"><span class="price">${{ product.price }}</span></div>
+            <form action="/cart/add/{{ product.id }}/" method="post" class="buy-form">
+              {% csrf_token %}
+              <button type="submit" class="btn">Add to cart</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <span class="waypoint">DASHBOARD</span>
+  <h1 style="margin-top:12px;">Sales & restocking</h1>
+
+  <div class="tabs">
+    <input type="radio" name="dash-tab" id="tab-sales" class="tab-radio" checked>
+    <input type="radio" name="dash-tab" id="tab-restock" class="tab-radio">
+    <input type="radio" name="dash-tab" id="tab-offers" class="tab-radio">
+
+    <div class="tab-labels">
+      <label for="tab-sales" class="tab-label">Sales history</label>
+      <label for="tab-restock" class="tab-label">Restock items</label>
+      <label class="tab-label"> <a href="/DBstore/trash/">Trash</a></label>
+      <label for="tab-offers" class="tab-label"> Offers </label>
+    </div>
+
+    <div class="tab-panel" id="panel-sales">
+
+      <div class="panel">
+        {% if daily_chart %}
+          <img class="chart-img" src="data:image/png;base64,{{ daily_chart }}" alt="Items sold today, by category">
+        {% else %}<p class="muted">No sales today.</p>{% endif %}
+      </div>
+
+      <div class="panel">
+        <img class="chart-img-pie" src="data:image/png;base64,{{ daily_pie }}" alt="Revenue by category today">
+      </div>
+
+      <div class="panel">
+        {% if weekly_chart %}
+          <img class="chart-img" src="data:image/png;base64,{{ weekly_chart }}" alt="Items sold this week, by category">
+        {% else %}<p class="muted">No sales this week.</p>{% endif %}
+      </div>
+
+      <div class="panel">
+        <img class="chart-img-pie" src="data:image/png;base64,{{ weekly_pie }}" alt="Revenue by category this week">
+      </div>
+
+      <div class="panel">
+        {% if monthly_chart %}
+          <img class="chart-img" src="data:image/png;base64,{{ monthly_chart }}" alt="Items sold this month, by category">
+        {% else %}<p class="muted">No sales this month.</p>{% endif %}
+      </div>
+
+      <div class="panel">
+        <img class="chart-img-pie" src="data:image/png;base64,{{ monthly_pie }}" alt="Revenue by category this month">
+      </div>
+
+    </div>
+
+    <div class="tab-panel" id="panel-restock">
+      <p class="muted" style="margin-bottom:20px;">Flagged when projected stock runs out within {{ restock_lead_days }} days.</p>
+
+      {% if restock_by_category %}
+        {% for category_name, items in restock_by_category.items %}
+        <div class="section-divider">{{ category_name|upper }}</div>
+        <div class="restock-list">
+          {% for item in items %}
+          <a href="/DBstore/products/manage/{{ product.category_id|default:'other' }}/?highlight={{ product.id }}" class="manage-card manage-card-link">
+          <div class="manage-card">
+            {% if item.product.image %}
+              <img class="manage-thumb" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            {% else %}
+              <div class="manage-thumb" style="background:#3A4038"></div>
+            {% endif %}
+            <div class="manage-details">
+              <span class="manage-name">{{ item.product.name }}</span>
+              <span class="stock-qty low-stock">
+                {{ item.product.quantity }} left
+                {% if item.days_left != None %} — ~{{ item.days_left }} day{{ item.days_left|pluralize }} of stock{% endif %}
+              </span>
+            </div>
+          </div>
+          </a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">Nothing needs restocking right now.</p>
+      {% endif %}
+    </div>
+    <div class="tab-panel" id="panel-offers">
+  </p>
+  <p class="muted" style="margin-bottom:20px;">Products currently on offer, storewide.</p>
+
+  {% if active_offers %}
+    <div class="manage-grid">
+      {% for product in active_offers %}
+      <a href="/DBstore/products/manage/{{ product.category_id|default:'other' }}/?highlight={{ product.id }}" class="manage-card manage-card-link">
+        {% if product.image %}
+          <img class="manage-thumb" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <div class="manage-thumb" style="background:#3A4038"></div>
+        {% endif %}
+        <div class="manage-details">
+          <span class="manage-name">{{ product.name }}</span>
+          <span class="offer-badge">{{ product.offer_percent }}% OFF</span>
+          <span class="stock-qty">
+            <s class="muted">${{ product.price }}</s> → <strong class="price">${{ product.offer_price }}</strong>
+          </span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No active offers right now.</p>
+  {% endif %}
+  </div>
+  </div>
+</div>
+{% endblock %}

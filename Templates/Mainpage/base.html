@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Basecamp{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand"><span class="brand-mark">&#9670;</span> Welcome to my store</a>
+    <nav class="main-nav">
+  <a href="/accounts/login/">Shop</a>
+  <a href="/store/">In Store</a>
+  <a href="/cart/">Cart</a> 
+  <a href="/history/">History </a>
+  <a href="/DBstore/dashboard/">Dashboard</a>
+ </nav>
+    <div class="header-actions">
+      {% if user.is_authenticated %}
+        <span class="hi">Logged in as {{ user.email }}</span>
+        <form action="/accounts/logout/" method="post" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="link-btn">Log out</button>
+        </form>
+      {% else %}
+        <a href="/accounts/login/">Log in</a>
+      {% endif %}
+    </div>
+  </div> 
+</header>
+<main>
+  {% if messages %}
+    <div class="wrap">
+      {% for message in messages %}
+        <p class="flash">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% block content %}
+  <div class="category-grid">
+    {% for category in categories %}
+    <a href="/store/category/{{ category.id }}/" class="category-card">
+      <h3 class="category-name">{{ category.name }}</h3>
+      <span class="category-count">{{ category.products.count }} item{{ category.products.count|pluralize }}</span>
+    </a>
+    {% empty %}
+    <p class="muted">No categories yet.</p>
+    {% endfor %}
+  </div>
+</div>
+  {% endblock %}</main>
+</body>
+</html>

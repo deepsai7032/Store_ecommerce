@@ -1,0 +1,69 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <span class="waypoint">TRASH</span>
+  <h1 style="margin-top:12px;">Deleted items</h1>
+  <p class="muted" style="margin-bottom:24px;">Restore anything below with one click — everything keeps its original details.</p>
+
+  <div class="section-divider">CATEGORIES</div>
+  {% if trashed_categories %}
+    <div class="manage-grid">
+      {% for category in trashed_categories %}
+      <div class="manage-card">
+        <div class="manage-details">
+          <span class="manage-name">{{ category.name }}</span>
+          <span class="muted" style="font-size:11px;">Trashed {{ category.trashed_at|date:"M d, Y H:i" }}</span>
+          <div style="display:flex; gap:8px; margin-top:6px;">
+            <form action="/DBstore/trash/restore-category/{{ category.id }}/" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Restore</button>
+            </form>
+            <form action="/DBstore/trash/delete-category/{{ category.id }}/" method="post"
+                  onsubmit="return confirm('Permanently delete {{ category.name }} and all its products? This cannot be undone.');">
+              {% csrf_token %}
+              <button type="submit" class="btn-delete-product">Delete forever</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No deleted categories.</p>
+  {% endif %}
+
+  <div class="section-divider">PRODUCTS</div>
+  {% if trashed_products %}
+    <div class="manage-grid">
+      {% for product in trashed_products %}
+      <div class="manage-card">
+        {% if product.image %}
+          <img class="manage-thumb" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <div class="manage-thumb" style="background:#3A4038"></div>
+        {% endif %}
+        <div class="manage-details">
+          <span class="manage-name">{{ product.name }}</span>
+          <span class="category-tag">{{ product.category.name|default:"Uncategorized" }}</span>
+          <span class="muted" style="font-size:12px;">${{ product.price }} · {{ product.quantity }} in stock</span>
+          <span class="muted" style="font-size:11px;">Trashed {{ product.trashed_at|date:"M d, Y H:i" }}</span>
+          <div style="display:flex; gap:8px; margin-top:6px;">
+            <form action="/DBstore/trash/restore-product/{{ product.id }}/" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">Restore</button>
+            </form>
+            <form action="/DBstore/trash/delete-product/{{ product.id }}/" method="post"
+                  onsubmit="return confirm('Permanently delete {{ product.name }}? This cannot be undone.');">
+              {% csrf_token %}
+              <button type="submit" class="btn-delete-product">Delete forever</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No deleted products.</p>
+  {% endif %}
+</div>
+{% endblock %}

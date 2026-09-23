@@ -1,0 +1,45 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <span class="waypoint">YOUR CART</span>
+  <h1 style="margin-top:12px;">Cart</h1>
+  {% if items %}
+    {% for item in items %}
+<div class="cart-row">
+  {% if item.product.image %}
+    <img class="cart-thumb" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+  {% else %}
+    <div class="cart-thumb" style="background:#3A4038"></div>
+  {% endif %}
+  <span class="cart-name">{{ item.product.name }}</span>
+  {% if item.product.offer_percent %}
+        <span class="cart-price-block">
+          <s class="muted">${{ item.product.price }}</s>
+          <span class="offer-badge">{{ item.product.offer_percent }}% OFF</span>
+        </span>
+      {% else %}
+        <span class="price">${{ item.product.price }}</span>
+      {% endif %}
+
+  <form action="/cart/update/{{ item.id }}/" method="post" class="cart-qty-form">
+    {% csrf_token %}
+    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="qty-input-small">
+    <button type="submit" class="btn-secondary">Update</button>
+  </form>
+
+  <span class="price">${{ item.subtotal }}</span>
+  <form action="/cart/remove/{{ item.id }}/" method="post" style="display:inline;">
+    {% csrf_token %}<button type="submit" class="btn-secondary">Remove</button>
+  </form>
+</div>
+{% endfor %}
+
+    <div class="cart-total"><span>Total</span><span class="price price-lg">${{ total }}</span></div>
+    <form action="/cart/checkout/" method="post">
+      {% csrf_token %}<button type="submit" class="btn">Place order</button>
+    </form>
+  {% else %}
+    <p class="muted">Your cart is empty. <a href="/store/">Browse products</a>.</p>
+  {% endif %}
+</div>
+{% endblock %}

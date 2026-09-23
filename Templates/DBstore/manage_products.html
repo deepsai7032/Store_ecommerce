@@ -1,0 +1,119 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <div class="page-header">
+    <div>
+      <span class="waypoint">In STOCK</span>
+      <a href="/DBstore/products/view/">
+        <span class="waypoint"> ALL items</span>
+      </a>
+      <h1 style="margin-top:12px;">
+        {% if selected_category %}{{ selected_category.name }}{% elif is_other %}Other{% else %}Categories{% endif %}
+      </h1>
+    </div>
+    <div style="display:flex; gap:10px;">
+      {% if selected_category or is_other %}
+      <button type="submit" name="update_all" value="1" class="btn" form="update-all-form">Update all</button>
+      {% endif %}
+      <details class="dropdown">
+        <summary class="btn">+ Add &#9662;</summary>
+        <div class="dropdown-menu">
+          <a href="/DBstore/products/add/">Add product</a>
+          <a href="/DBstore/categories/add/">New category</a>
+          <a href="/DBstore/trash/">Trash</a>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  {% if selected_category or is_other %}
+    <a href="/DBstore/products/manage/" class="back-link">&larr; All categories</a>
+
+    <form action="/DBstore/products/update/" method="post" id="update-all-form">
+      {% csrf_token %}
+
+      <div class="manage-grid">
+        {% for product in products %}
+        <div class="manage-card">
+          {% if product.image %}
+            <img class="manage-thumb" src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="manage-thumb" style="background:#3A4038"></div>
+          {% endif %}
+
+          <div class="manage-details">
+            <span class="manage-name">{{ product.name }}</span>
+
+            <input type="hidden" name="selected" value="{{ product.id }}">
+            <select name="category_{{ product.id }}" class="qty-input category-select">
+              <option value="">— None —</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if product.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+            <input type="number" name="price_{{ product.id }}" value="{{ product.price }}" step="0.01" min="0" class="qty-input">
+            <input type="number" name="quantity_{{ product.id }}" value="{{ product.quantity }}" min="0" class="qty-input">
+            <label class="qty-label">Offer %</label>
+            <input type="number" name="offer_percent_{{ product.id }}" value="{{ product.offer_percent }}" min="0" max="90" class="qty-input">
+            <button type="submit" name="product_id" value="{{ product.id }}" form="update-all-form" class="btn btn-secondary">Update</button>
+            <button type="submit" form="delete-form-{{ product.id }}" class="btn-delete-product">Delete</button>
+            
+          </div>
+          </div>
+
+        </div>
+        {% empty %}
+        <p class="muted">No products in this category yet.</p>
+        {% endfor %}
+      </div>
+    </form>
+
+    {% for product in products %}
+    <form action="/DBstore/products/delete/{{ product.id }}/" method="post" id="delete-form-{{ product.id }}"
+          onsubmit="return confirm('Delete {{ product.name }}? Make sure you want to delete this.');"
+          style="display:inline;">
+      {% csrf_token %}
+    </form>
+    {% endfor %}
+
+    {% if products.has_other_pages %}
+    <div class="pagination">
+      {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}" class="page-arrow">&larr;</a>
+      {% else %}
+        <span class="page-arrow disabled">&larr;</span>
+      {% endif %}
+      <span class="page-number">{{ products.number }}</span>
+      {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}" class="page-arrow">&rarr;</a>
+      {% else %}
+        <span class="page-arrow disabled">&rarr;</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+    <div class="category-grid">
+      {% for category in categories %}
+      <div class="category-card-wrap">
+        <a href="/DBstore/products/manage/{{ category.id }}/" class="category-card">
+          <h3 class="category-name">{{ category.name }}</h3>
+          <span class="category-count">{{ category.products.count }} item{{ category.products.count|pluralize }}</span>
+        </a>
+        <form action="/DBstore/categories/delete/{{ category.id }}/" method="post"
+              onsubmit="return confirm('Are you sure you want to delete {{ category.name }}?') && confirm('This will permanently delete all products and images in this category. Continue?');">
+          {% csrf_token %}
+          <button type="submit" class="btn-delete-category">Delete category</button>
+        </form>
+      </div>
+      {% endfor %}
+      {% if uncategorized_count > 0 %}
+      <a href="/DBstore/products/manage/other/" class="category-card">
+        <h3 class="category-name">Other</h3>
+        <span class="category-count">{{ uncategorized_count }} item{{ uncategorized_count|pluralize }}</span>
+      </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

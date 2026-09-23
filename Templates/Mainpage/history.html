@@ -1,0 +1,37 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <span class="waypoint">YOUR ORDERS</span>
+  <h1 style="margin-top:12px;">Purchase history</h1>
+
+  {% if purchases %}
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price per Unit </th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for purchase in purchases %}
+        <tr>
+          <td class="history-product">
+            {% if purchase.product.image %}
+              <img class="history-thumb" src="{{ purchase.product.image.url }}" alt="{{ purchase.product.name }}">
+            {% endif %}
+            {{ purchase.product.name }}
+          </td>
+          <td>{{ purchase.quantity }}</td>
+          <td class="price">$ {{ purchase.product.price|floatformat:2 }}  </td>
+          <td class="muted">{{ purchase.purchased_at|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">You haven't bought anything yet. <a href="/store/">Browse products</a>.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <div class="form-card">
+    <span class="waypoint">NEW CATEGORY</span>
+    <h1 style="margin-top:12px;">Add a category</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label>Category name</label>
+        {{ form.name }}
+        {% for error in form.name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <button type="submit" class="btn" style="width:100%;">Save category</button>
+    </form>
+    <p class="form-foot"><a href="/DBstore/products/manage/">&larr; Back to products</a></p>
+  </div>
+</div>
+{% endblock %}

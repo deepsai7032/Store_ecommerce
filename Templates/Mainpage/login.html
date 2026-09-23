@@ -1,0 +1,22 @@
+{% extends "Mainpage/base.html" %}
+{% block content %}
+<div class="wrap">
+  <div class="form-card">
+    <span class="waypoint">SIGN IN</span>
+    <h1 style="margin-top:12px;">Log in</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" required>
+      </div>
+      <div class="field">
+        <label>Phone number</label>
+        <input type="password" name="phone" required>
+      </div>
+      <button type="submit" class="btn" style="width:100%;">Log in</button>
+    </form>
+    <p class="form-foot">New here? <a href="/accounts/register/">Create an account</a></p>
+  </div>
+</div>
+{% endblock %}
